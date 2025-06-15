@@ -38,5 +38,5 @@ Yes, provided the server host has this addon installed, players should experienc
 ### **I don't notice significant performance gains, why?**
 The effectiveness varies based on hardware specifications and installed addons. Users with extremely high addon counts or weaker hardware might notice smaller performance improvements.
 
-### **How do I report bugs or compatibility issues?**
-Report any issues directly via the Steam Workshop comments or open an issue on the [GitHub repository](https://github.com/Sh1n0suk3/GMOD_Performance-mod).
+~~### **How do I report bugs or compatibility issues?**~~
+~~Report any issues directly via the Steam Workshop comments or open an issue on the [GitHub repository](https://github.com/Sh1n0suk3/GMOD_Performance-mod).~~
