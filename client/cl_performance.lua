@@ -1,17 +1,12 @@
 local PerformanceMod = PerformanceMod or {}
 PerformanceMod.Config = PerformanceMod.Config or {}
 
-
-PerformanceMod.Config.ApplyDelay = 2.5 
-PerformanceMod.Config.CommandInterval = 0.75 
-
+PerformanceMod.Config.ApplyDelay = 2
+PerformanceMod.Config.CommandInterval = 0.5
 
 local performance_commands = {
     {"gmod_mcore_test", "1"},
-    {"mem_max_heapsize", "131072"},
-    {"mem_max_heapsize_dedicated", "131072"},
-    {"mem_min_heapsize", "131072"},
-    {"threadpool_affinity", "64"},
+    {"threadpool_affinity", "1"},
     {"mat_queue_mode", "2"},
     {"mat_powersavingsmode", "0"},
     {"r_queued_ropes", "1"},
@@ -23,11 +18,8 @@ local performance_commands = {
     {"fast_fogvolume", "1"}
 }
 
-
 local network_commands = {
-    {"cl_forcepreload", "1"},
     {"cl_lagcompensation", "1"},
-    {"cl_timeout", "3600"},
     {"cl_smoothtime", "0.05"},
     {"cl_localnetworkbackdoor", "1"},
     {"cl_cmdrate", "66"},
@@ -36,29 +28,31 @@ local network_commands = {
     {"net_maxpacketdrop", "0"},
     {"net_chokeloop", "1"},
     {"net_compresspackets", "1"},
-    {"net_splitpacket_maxrate", "50000"},
     {"net_compresspackets_minsize", "4097"},
-    {"net_maxroutable", "1200"},
-    {"net_maxfragments", "1200"},
     {"net_maxfilesize", "64"},
-    {"net_maxcleartime", "0"},
-    {"rate", "1048576"}
+    {"rate", "786432"},
+    {"net_usesocketsforloopback", "1"},
+    {"net_queued_packet_thread", "1"},
+    {"net_udp_rcvbuf", "131072"},
+    {"net_splitrate", "1"}
 }
-
 
 local other_commands = {
     {"snd_mix_async", "1"},
     {"snd_async_fullyasync", "1"},
-    {"snd_async_minsize", "0"},
     {"sv_forcepreload", "1"},
     {"studio_queue_mode", "1"},
     {"filesystem_max_stdio_read", "64"},
     {"in_usekeyboardsampletime", "1"},
-    {"r_radiosity", "4"},
     {"mat_frame_sync_enable", "0"},
     {"mat_framebuffercopyoverlaysize", "0"},
-    {"lod_TransitionDist", "2000"},
-    {"filesystem_unbuffered_io", "0"}
+    {"particle_sim_alt_cores", "2"},
+    {"opt_EnumerateLeavesFastAlgorithm", "1"},
+    {"snd_lockpartial", "1"},
+    {"voice_steal", "2"},
+    {"cl_predictweapons", "1"},
+    {"cl_pred_optimize", "2"},
+    {"filesystem_use_overlapped_io", "1"}
 }
 
 CreateClientConVar("performancemod_messages_enabled", "1", true, true, "Enable/disable chat messages")
@@ -68,7 +62,6 @@ CreateClientConVar("performancemod_fps_boost", "1", true, false, "Enable FPS boo
 
 local function RunCommands(commands)
     local currentCommand = 1
-    
     local function ApplyNextCommand()
         if currentCommand <= #commands then
             RunConsoleCommand(unpack(commands[currentCommand]))
@@ -76,21 +69,16 @@ local function RunCommands(commands)
             timer.Simple(PerformanceMod.Config.CommandInterval, ApplyNextCommand)
         end
     end
-    
     timer.Simple(PerformanceMod.Config.CommandInterval, ApplyNextCommand)
 end
 
-
 local function ApplyClientSettings()
-    if GetConVar("performancemod_messages_enabled"):GetBool() then
-        chat.AddText(Color(0, 255, 0), "[PerformanceMod] Applying optimizations...")
-    end
-
     if GetConVar("performancemod_fps_boost"):GetBool() then
         RunCommands(performance_commands)
     else
         RunCommands({
             {"gmod_mcore_test", "0"},
+            {"threadpool_affinity", "0"},
             {"mat_queue_mode", "-1"},
             {"r_queued_ropes", "0"},
             {"r_threaded_renderables", "0"},
@@ -106,9 +94,7 @@ local function ApplyClientSettings()
         RunCommands(network_commands)
     else
         RunCommands({
-            {"cl_forcepreload", "0"},
             {"cl_lagcompensation", "1"},
-            {"cl_timeout", "30"},
             {"cl_smoothtime", "0.1"},
             {"cl_localnetworkbackdoor", "0"},
             {"cl_cmdrate", "30"},
@@ -117,13 +103,13 @@ local function ApplyClientSettings()
             {"net_maxpacketdrop", "5000"},
             {"net_chokeloop", "0"},
             {"net_compresspackets", "1"},
-            {"net_splitpacket_maxrate", "1048576"},
             {"net_compresspackets_minsize", "1024"},
-            {"net_maxroutable", "1200"},
-            {"net_maxfragments", "1260"},
             {"net_maxfilesize", "16"},
-            {"net_maxcleartime", "4"},
-            {"rate", "196608"}
+            {"rate", "100000"},
+            {"net_usesocketsforloopback", "0"},
+            {"net_queued_packet_thread", "0"},
+            {"net_udp_rcvbuf", "131072"},
+            {"net_splitrate", "0"}
         })
     end
 
@@ -133,97 +119,61 @@ local function ApplyClientSettings()
         RunCommands({
             {"snd_mix_async", "0"},
             {"snd_async_fullyasync", "0"},
-            {"snd_async_minsize", "262144"},
             {"sv_forcepreload", "0"},
             {"studio_queue_mode", "0"},
             {"filesystem_max_stdio_read", "32"},
             {"in_usekeyboardsampletime", "0"},
-            {"r_radiosity", "2"},
             {"mat_frame_sync_enable", "1"},
             {"mat_framebuffercopyoverlaysize", "128"},
-            {"lod_TransitionDist", "800"},
-            {"filesystem_unbuffered_io", "1"}
+            {"particle_sim_alt_cores", "2"},
+            {"opt_EnumerateLeavesFastAlgorithm", "1"},
+            {"snd_lockpartial", "0"},
+            {"voice_steal", "0"},
+            {"cl_predictweapons", "0"},
+            {"cl_pred_optimize", "0"},
+            {"filesystem_use_overlapped_io", "1"}
         })
     end
 
     if GetConVar("performancemod_messages_enabled"):GetBool() then
         timer.Simple(5, function()
-            chat.AddText(Color(0, 255, 0), "[PerformanceMod] Optimizations applied successfully!")
+            if GetConVar("performancemod_fps_boost"):GetBool() then
+                chat.AddText(Color(0, 255, 0), "[PerformanceMod] Optimizations applied.")
+            else
+                chat.AddText(Color(0, 255, 0), "[PerformanceMod] Optimizations reverted.")
+            end
         end)
     end
 end
 
-
 timer.Simple(PerformanceMod.Config.ApplyDelay, ApplyClientSettings)
 
-cvars.AddChangeCallback("performancemod_network_enabled", function() 
-    timer.Simple(0.1, ApplyClientSettings) 
+cvars.AddChangeCallback("performancemod_network_enabled", function()
+    timer.Simple(0.1, ApplyClientSettings)
 end, "PerformanceMod")
 
-cvars.AddChangeCallback("performancemod_other_enabled", function() 
-    timer.Simple(0.1, ApplyClientSettings) 
+cvars.AddChangeCallback("performancemod_other_enabled", function()
+    timer.Simple(0.1, ApplyClientSettings)
 end, "PerformanceMod")
 
-cvars.AddChangeCallback("performancemod_fps_boost", function() 
-    timer.Simple(0.1, ApplyClientSettings) 
+cvars.AddChangeCallback("performancemod_fps_boost", function()
+    timer.Simple(0.1, ApplyClientSettings)
 end, "PerformanceMod")
 
 local function CreateSettingsMenu()
     spawnmenu.AddToolMenuOption("Utilities", "User", "Performance Mod", "Performance Mod", "", "", function(panel)
         panel:ClearControls()
-        
-        panel:Help("")
         panel:Help("Messaging Options")
         panel:CheckBox("Enable Messages", "performancemod_messages_enabled")
         panel:ControlHelp("Show optimization status messages in chat.")
-        
-        panel:Help("")
         panel:Help("Client-side Optimizations")
         panel:CheckBox("Enable FPS Boost", "performancemod_fps_boost")
         panel:ControlHelp("Applies performance commands to potentially increase FPS.")
-
         panel:CheckBox("Enable Network Optimization", "performancemod_network_enabled")
         panel:ControlHelp("Adjusts network-related settings to potentially reduce lag and improve connection stability.")
-
         panel:CheckBox("Enable Other Optimizations", "performancemod_other_enabled")
         panel:ControlHelp("Optimizes various game systems including sound processing and file I/O.")
-
-        if LocalPlayer():IsAdmin() then
-            panel:Help("")
-            panel:Help("Server-side Optimizations (Admin Only)")
-            local serverWarning = panel:Help("WARNING: These optimizations are experimental and may affect gameplay.")
-            serverWarning:SetColor(Color(255, 0, 0)) 
-            panel:CheckBox("Optimize Server Animations", "performancemod_server_optimize_animations")
-            panel:ControlHelp("Disables certain animations on the server to reduce CPU usage.")
-
-            panel:CheckBox("Optimize Server Memory", "performancemod_server_optimize_memory")
-            panel:ControlHelp("Adjusts memory-related settings on the server for better performance.")
-        end
     end)
 end
 
-
 hook.Add("PopulateToolMenu", "PerformanceModMenu", CreateSettingsMenu)
-
-
-net.Receive("PerformanceModApplyServer", function()
-    if GetConVar("performancemod_messages_enabled"):GetBool() then
-        chat.AddText(Color(0, 255, 0), "[PerformanceMod] Server-side optimizations applied.")
-    end
-end)
-
-local function ApplyServerOptimizations()
-    if LocalPlayer():IsAdmin() then
-        net.Start("PerformanceModApplyServer")
-        net.SendToServer()
-    end
-end
-
-
-cvars.AddChangeCallback("performancemod_server_optimize_animations", function() 
-    timer.Simple(0.1, ApplyServerOptimizations) 
-end, "PerformanceModServer")
-
-cvars.AddChangeCallback("performancemod_server_optimize_memory", function() 
-    timer.Simple(0.1, ApplyServerOptimizations) 
-end, "PerformanceModServer")
